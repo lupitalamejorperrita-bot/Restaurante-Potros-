@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Restaurante Potros — Menú</title>
+<style>
+  :root{
+    --bg: #fff8f0;
+    --card: #ffffff;
+    --accent: #2b8a6b;
+    --accent-2: #1d6b50;
+    --muted: #f3f6f5;
+    --text: #223;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter, "Helvetica Neue", Arial, sans-serif;background:var(--bg);color:var(--text)}
+  header{background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#fff;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:40}
+  header h1{font-size:1.15rem;margin:0}
+  header p{margin:0;font-size:0.9rem;opacity:0.95}
+  .container{display:grid;grid-template-columns:1fr;gap:18px;padding:20px;max-width:1200px;margin:0 auto}
+  .section{background:var(--muted);padding:14px;border-radius:12px}
+  .section h2{color:var(--accent-2);margin:0 0 12px 0}
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.04);display:flex;flex-direction:column}
+  .media-wrap{padding:12px;display:flex;align-items:center;justify-content:center}
+  .media{width:100%;height:140px;border-radius:12px;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center}
+  .media img{width:100%;height:100%;object-fit:cover;display:block}
+  .body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .title{font-size:1rem;color:var(--accent-2);margin:0}
+  .desc{font-size:0.88rem;color:#444;margin:0;flex:1}
+  .row{display:flex;align-items:center;gap:8px}
+  .price{font-weight:700;color:var(--accent)}
+  .qty{width:72px;padding:8px;border-radius:8px;border:1px solid #ddd}
+  .btn-add{background:var(--accent);color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer}
+  .btn-add:hover{opacity:.95}
+  /* cart toggle floating */
+  .cart-toggle{position:fixed;right:18px;bottom:18px;width:60px;height:60px;border-radius:999px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.25rem;box-shadow:0 10px 30px rgba(0,0,0,0.15);z-index:80;cursor:pointer}
+  /* cart panel */
+  .cart-panel{position:fixed;right:0;top:0;height:100vh;width:380px;background:var(--card);box-shadow:-16px 0 36px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .26s ease;z-index:90;display:flex;flex-direction:column}
+  .cart-panel.open{transform:translateX(0)}
+  .cart-head{padding:16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+  .cart-body{padding:12px;overflow:auto;flex:1}
+  .cart-foot{padding:12px;border-top:1px solid #f0f0f0}
+  .cart-item{display:flex;gap:10px;margin-bottom:12px;align-items:center}
+  .mini{width:72px;height:56px;border-radius:10px;background:#f6f6f6;display:flex;align-items:center;justify-content:center;color:#777;font-weight:600;overflow:hidden}
+  .mini img{width:100%;height:100%;object-fit:cover;display:block}
+  .meta{flex:1}
+  .meta .name{font-weight:700;color:#222}
+  .meta .small{font-size:0.88rem;color:#666}
+  .small{font-size:0.85rem;color:#666}
+  .control{display:flex;gap:6px;margin-top:8px}
+  .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{padding:6px 8px;background:transparent;border:1px solid #ddd;color:var(--accent-2)}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.green{background:#25D366;color:#fff}
+  input, textarea, select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:0.95rem}
+  textarea{resize:vertical}
+  footer{padding:14px;text-align:center;font-size:0.85rem;color:#666}
+  @media(max-width:900px){
+    .cart-panel{width:100%;height:56vh;bottom:0;top:auto;right:0;transform:translateY(110%)}
+    .cart-panel.open{transform:translateY(0)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Restaurante Potros</h1>
+    <p>Pedidos por WhatsApp · Rápido y sencillo</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button onclick="openCart()" style="background:transparent;border:1px solid rgba(255,255,255,0.14);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer">Abrir carrito</button>
+  </div>
+</header>
+
+<main class="container" id="mainContainer">
+  <!-- Entradas -->
+  <section class="section">
+    <h2>🥟 Entradas</h2>
+    <div class="grid" id="menu-entradas"></div>
+  </section>
+
+  <!-- Platos principales -->
+  <section class="section">
+    <h2>🍲 Platos principales</h2>
+    <div class="grid" id="menu-principales"></div>
+  </section>
+
+  <!-- Sopas y caldos -->
+  <section class="section">
+    <h2>🍜 Sopas y caldos</h2>
+    <div class="grid" id="menu-sopas"></div>
+  </section>
+
+  <!-- Postres -->
+  <section class="section">
+    <h2>🍰 Postres</h2>
+    <div class="grid" id="menu-postres"></div>
+  </section>
+
+  <!-- Bebidas -->
+  <section class="section">
+    <h2>🥤 Bebidas</h2>
+    <div class="grid" id="menu-bebidas"></div>
+  </section>
+
+  <!-- Menú infantil -->
+  <section class="section">
+    <h2>👶 Menú infantil</h2>
+    <div class="grid" id="menu-infantil"></div>
+  </section>
+
+  <!-- Platos de temporada -->
+  <section class="section">
+    <h2>🕰️ Platos de temporada</h2>
+    <div class="grid" id="menu-temporada"></div>
+  </section>
+
+  <!-- Acompañamientos -->
+  <section class="section">
+    <h2>🥗 Acompañamientos</h2>
+    <div class="grid" id="menu-acompañamientos"></div>
+  </section>
+</main>
+
+<!-- floating cart button -->
+<div class="cart-toggle" onclick="openCart()" title="Abrir carrito">🛒</div>
+
+<!-- cart panel -->
+<aside id="cartPanel" class="cart-panel" aria-hidden="true">
+  <div class="cart-head">
+    <div style="font-weight:700">Tu pedido</div>
+    <div><button class="btn ghost" onclick="closeCart()">Cerrar ✕</button></div>
+  </div>
+
+  <div class="cart-body">
+    <div id="cartItemsArea"></div>
+
+    <div style="margin-top:8px;">
+      <div class="small">Total</div>
+      <div style="font-weight:800;font-size:1.2rem">$ <span id="cartTotal">0</span></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="small">Nombre</div>
+      <input id="nombreCliente" placeholder="Nombre completo">
+      <div class="small" style="margin-top:8px">Dirección</div>
+      <input id="direccionCliente" placeholder="Dirección de entrega">
+      <div class="small" style="margin-top:8px">Método de pago</div>
+      <select id="metodoPago">
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="Transferencia">Transferencia</option>
+      </select>
+      <div class="small" style="margin-top:8px">Notas (opcional)</div>
+      <textarea id="notasCliente" rows="3" placeholder="Ej: sin cebolla, dirigirse a la puerta..."></textarea>
+    </div>
+  </div>
+
+  <div class="cart-foot">
+    <div style="display:flex;gap:8px">
+      <button class="btn green" onclick="enviarPedido()">Pedir</button>
+      <button class="btn ghost" onclick="vaciarCarrito()">Vaciar</button>
+    </div>
+    <div style="margin-top:8px;font-size:0.85rem;color:#666">Se abrirá WhatsApp con el pedido listo para enviar.</div>
+  </div>
+</aside>
+
+<footer>
+  © Restaurante Potros — Menú dinámico · Carrito lateral
+</footer>
+
+<script>
+/* ======= Datos del menú con imágenes (Unsplash) ======= */
+const platos = [
+  // Entradas
+  {id:1, nombre:"Empanaditas de carne", descripcion:"Empanadas rellenas de carne y a veces huevo, acompañadas con ají picante o suave.", precio:5000, categoria:"entradas", imagen:"https://source.unsplash.com/500x400/?empanada"},
+  {id:2, nombre:"Platanitos con suero costeño", descripcion:"Tajadas de plátano acompañadas con suero costeño.", precio:5000, categoria:"entradas", imagen:"https://source.unsplash.com/500x400/?plantain,tostones"},
+  {id:3, nombre:"Tazón de fruta pequeño", descripcion:"Mini ensaladita de frutas: banana, piña, melón y mango.", precio:5000, categoria:"entradas", imagen:"https://source.unsplash.com/500x400/?fruit,bowl"},
+  {id:4, nombre:"Morcilla santafereña", descripcion:"Morcilla tradicional santafereña.", precio:5000, categoria:"entradas", imagen:"https://source.unsplash.com/500x400/?sausage"},
+
+  // Platos principales
+  {id:5, nombre:"Goulash de carne", descripcion:"Carne con arveja, zanahoria y habichuela, acompañado de ensalada.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?goulash,stew"},
+  {id:6, nombre:"Arroz atollado", descripcion:"Arroz con pollo, salchicha, arveja, zanahoria y habichuela.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?rice,chicken"},
+  {id:7, nombre:"Espaguetis con proteína al gusto", descripcion:"Espaguetis a la boloñesa con carne, camarones o pollo.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?spaghetti,pasta"},
+  {id:8, nombre:"Nicuro sudado", descripcion:"Nicuro sudado acompañado con porción de arroz y patacones.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?stew,caribbean"},
+  {id:9, nombre:"Pollo al horno", descripcion:"Pollo asado, acompañado de yuca frita y porción de arroz.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?roasted-chicken"},
+  {id:10, nombre:"Pollo al curry", descripcion:"Pollo al curry, acompañado de puré de papa, ensalada y porción de arroz.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?chicken-curry"},
+  {id:11, nombre:"Sudado de pollo", descripcion:"Pollo sudado con papa, yuca, mazorca, plátano y aguacate.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?chicken-stew"},
+  {id:12, nombre:"Frijoles", descripcion:"Frijoles con carne molida y porción de arroz.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?beans,stew"},
+  {id:13, nombre:"Hamburguesa de la casa", descripcion:"Hamburguesa con carne mixta, tomate, cebolla, lechuga, huevo frito y salsas al gusto.", precio:18000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?burger"},
+  {id:14, nombre:"Perro caliente", descripcion:"Perro caliente con queso, papas fosforito e ingredientes a elección.", precio:15000, categoria:"principales", imagen:"https://source.unsplash.com/500x400/?hotdog"},
+
+  // Postres
+  {id:15, nombre:"Helado", descripcion:"Helado cremoso y delicioso.", precio:3800, categoria:"postres", imagen:"https://source.unsplash.com/500x400/?ice-cream"},
+  {id:16, nombre:"Paleta Drácula (cremhelado)", descripcion:"La paleta Drácula de cremhelado, un clásico irresistible.", precio:5000, categoria:"postres", imagen:"https://source.unsplash.com/500x400/?popsicle"},
+  {id:17, nombre:"Torta de manzana", descripcion:"Torta de manzana casera, suave y deliciosa.", precio:3000, categoria:"postres", imagen:"https://source.unsplash.com/500x400/?apple-pie"},
+
+  // Bebidas
+  {id:18, nombre:"Gaseosa Colombiana", descripcion:"Gaseosa Colombiana", precio:2900, categoria:"bebidas", imagen:"https://source.unsplash.com/500x400/?soda"},
+  {id:19, nombre:"Gaseosa Coca Cola", descripcion:"Gaseosa Coca Cola", precio:2900, categoria:"bebidas", imagen:"https://source.unsplash.com/500x400/?coke"},
+  {id:20, nombre:"Kola Román", descripcion:"Kola Román", precio:2900, categoria:"bebidas", imagen:"https://source.unsplash.com/500x400/?soda,bottle"},
+
+  // Infantil
+  {id:21, nombre:"Nuggets de pollo", descripcion:"Deliciosos nuggets de pollo, crujientes por fuera y jugosos por dentro.", precio:10000, categoria:"infantil", imagen:"https://source.unsplash.com/500x400/?chicken-nuggets"},
+  {id:22, nombre:"Mini hamburguesas", descripcion:"Mini hamburguesas con carne y queso, tamaño ideal para niños.", precio:9000, categoria:"infantil", imagen:"https://source.unsplash.com/500x400/?sliders,mini-burgers"},
+
+  // Sopas y caldos
+  {id:23, nombre:"Sopa del día", descripcion:"Sopa del día, preparada con ingredientes frescos y caseros.", precio:5000, categoria:"sopas", imagen:"https://source.unsplash.com/500x400/?soup"},
+
+  // Temporada
+  {id:24, nombre:"Arroz chino", descripcion:"Arroz chino al estilo casero, con vegetales y proteína a elección.", precio:15000, categoria:"temporada", imagen:"https://source.unsplash.com/500x400/?fried-rice"},
+
+  // Acompañamientos
+  {id:25, nombre:"Yuca", descripcion:"Porción de yuca frita, crujiente y deliciosa.", precio:5000, categoria:"acompañamientos", imagen:"https://source.unsplash.com/500x400/?cassava"},
+  {id:26, nombre:"Plátano", descripcion:"Plátano frito, dulce y suave.", precio:5000, categoria:"acompañamientos", imagen:"https://source.unsplash.com/500x400/?plantain"},
+  {id:27, nombre:"Papas fritas", descripcion:"Porción de papas fritas doradas y crujientes.", precio:5000, categoria:"acompañamientos", imagen:"https://source.unsplash.com/500x400/?french-fries"},
+  {id:28, nombre:"Porción de arroz", descripcion:"Porción de arroz blanco cocido al estilo casero.", precio:5000, categoria:"acompañamientos", imagen:"https://source.unsplash.com/500x400/?white-rice"},
+  {id:29, nombre:"Patacones", descripcion:"Patacones crujientes, perfectos para acompañar cualquier plato.", precio:5000, categoria:"acompañamientos", imagen:"https://source.unsplash.com/500x400/?plantain-fry"}
+];
+
+/* ======= Generar menú en DOM ======= */
+const containers = {
+  entradas: document.getElementById('menu-entradas'),
+  principales: document.getElementById('menu-principales'),
+  postres: document.getElementById('menu-postres'),
+  bebidas: document.getElementById('menu-bebidas'),
+  infantil: document.getElementById('menu-infantil'),
+  sopas: document.getElementById('menu-sopas'),
+  temporada: document.getElementById('menu-temporada'),
+  acompañamientos: document.getElementById('menu-acompañamientos')
+};
+
+platos.forEach(p => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="media-wrap">
+      <div class="media"><img src="${p.imagen}" alt="${p.nombre}"></div>
+    </div>
+    <div class="body">
+      <h3 class="title">${p.nombre}</h3>
+      <p class="desc">${p.descripcion}</p>
+      <div class="row">
+        <div class="price">$${p.precio.toLocaleString('es-CO')}</div>
+        <div style="flex:1"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input class="qty" type="number" id="cantidad-${p.id}" min="1" value="1" />
+        <button class="btn-add" onclick="agregarAlCarrito(${p.id})">Agregar</button>
+      </div>
+    </div>
+  `;
+  const cont = containers[p.categoria];
+  if(cont) cont.appendChild(card);
+});
+
+/* ======= Carrito (estado) y render ======= */
+let carrito = [];
+const cartItemsArea = document.getElementById('cartItemsArea');
+const cartTotalEl = document.getElementById('cartTotal');
+
+function agregarAlCarrito(id){
+  const plato = platos.find(x=>x.id===id);
+  const qty = Math.max(1, parseInt(document.getElementById(`cantidad-${id}`).value || 1));
+  // si el mismo plato ya está en carrito, sumamos cantidades
+  const existente = carrito.find(i => i.id === id);
+  if(existente){
+    existente.cantidad += qty;
+    existente.subtotal = existente.cantidad * existente.precio;
+  } else {
+    carrito.push({ id: plato.id, nombre: plato.nombre, precio: plato.precio, cantidad: qty, subtotal: plato.precio * qty, imagen: plato.imagen });
+  }
+  renderCart();
+  openCart();
+}
+
+function renderCart(){
+  cartItemsArea.innerHTML = '';
+  if(carrito.length === 0){
+    cartItemsArea.innerHTML = '<div style="color:#777;margin:6px 0">Tu carrito está vacío</div>';
+    cartTotalEl.textContent = '0';
+    return;
+  }
+  let total = 0;
+  carrito.forEach((item, idx) => {
+    total += item.subtotal;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div class="mini"><img src="${item.imagen}" alt="${item.nombre}"></div>
+      <div class="meta">
+        <div class="name">${item.nombre}</div>
+        <div class="small">$${item.precio.toLocaleString('es-CO')} c/u · Subtotal: $${item.subtotal.toLocaleString('es-CO')}</div>
+        <div class="control">
+          <button class="btn ghost" onclick="changeQty(${idx}, -1)">-</button>
+          <div style="padding:6px 10px;border-radius:6px;border:1px solid #eee;background:#fafafa">${item.cantidad}</div>
+          <button class="btn ghost" onclick="changeQty(${idx}, +1)">+</button>
+          <button class="btn" style="background:#ff6b6b;color:#fff" onclick="removeItem(${idx})">Eliminar</button>
+        </div>
+      </div>
+    `;
+    cartItemsArea.appendChild(div);
+  });
+  cartTotalEl.textContent = total.toLocaleString('es-CO');
+}
+
+function changeQty(index, delta){
+  if(!carrito[index]) return;
+  carrito[index].cantidad = Math.max(1, carrito[index].cantidad + delta);
+  carrito[index].subtotal = carrito[index].cantidad * carrito[index].precio;
+  renderCart();
+}
+function removeItem(index){
+  carrito.splice(index,1);
+  renderCart();
+}
+function vaciarCarrito(){
+  if(!confirm('¿Vaciar el carrito?')) return;
+  carrito = [];
+  renderCart();
+}
+
+/* ======= Cart panel controls ======= */
+const cartPanel = document.getElementById('cartPanel');
+function openCart(){ cartPanel.classList.add('open'); cartPanel.setAttribute('aria-hidden','false'); renderCart(); }
+function closeCart(){ cartPanel.classList.remove('open'); cartPanel.setAttribute('aria-hidden','true'); }
+
+/* ======= Envío por WhatsApp ======= */
+const WHATSAPP = '573005304700'; // tu número sin '+' ni espacios
+
+function enviarPedido(){
+  const nombre = document.getElementById('nombreCliente').value.trim();
+  const direccion = document.getElementById('direccionCliente').value.trim();
+  const metodo = document.getElementById('metodoPago').value;
+  const notas = document.getElementById('notasCliente').value.trim();
+
+  if(!nombre || !direccion){
+    alert('Por favor completa tu nombre y dirección.');
+    return;
+  }
+  if(carrito.length === 0){
+    alert('Tu carrito está vacío.');
+    return;
+  }
+
+  let total = carrito.reduce((s,i)=>s+i.subtotal,0);
+  // construir mensaje seguro
+  let mensaje = `Hola, quiero hacer el siguiente pedido:\n\n`;
+  mensaje += `Nombre: ${nombre}\nDirección: ${direccion}\nMétodo de pago: ${metodo}\n\n`;
+  carrito.forEach(it => {
+    mensaje += `- ${it.nombre} x${it.cantidad}: $${it.subtotal.toLocaleString('es-CO')}\n`;
+  });
+  mensaje += `\nTotal: $${total.toLocaleString('es-CO')}`;
+  if(notas) mensaje += `\nNotas: ${notas}`;
+
+  const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
+
+  // opcional: vaciar carrito y cerrar panel luego de enviar
+  carrito = [];
+  renderCart();
+  closeCart();
+}
+
+/* inicializar (por si alguien abre el panel antes) */
+renderCart();
+</script>
+</body>
+</html>
